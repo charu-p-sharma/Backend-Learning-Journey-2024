@@ -1,1 +1,1 @@
-export const DB_NAME = "BackendConnectionWithMERNPractice"
+export const DB_NAME = "ytClone"
