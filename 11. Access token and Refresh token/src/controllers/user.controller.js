@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+// import { upload } from "../middlewares/multer.middleware.js"
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -37,6 +37,7 @@ const registerUser = asyncHandler(async (req, res) => {
     //1.get user details from backend 
     const { email, fullName, username, password } = req.body
     console.log(email);
+    console.log(req.body);
 
 
     //2.validation - not empty 
@@ -63,12 +64,12 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //4.check for images , check for avatar
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
-    let coverImageLocalPath;
-    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage > 0) {
-        coverImageLocalPath = req.files?.coverImage[0].path
-    }
+    // let coverImageLocalPath;
+    // if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage > 0) {
+    //     coverImageLocalPath = req.files?.coverImage[0].path
+    // }
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar file is required")
@@ -90,7 +91,7 @@ const registerUser = asyncHandler(async (req, res) => {
         coverImage: coverImage?.url || "",
         email,
         password,
-        username: username.toLowerCase().split(" ").join("_")
+        username: username.toLowerCase()
     })
 
 
@@ -112,7 +113,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
 })
 
-const loginUser = asyncHandler(async (req, res,) => {
+
+// use this if u are using multer-->const loginUser = asyncHandler(upload.single('avatar'), async (req, res) => {}
+const loginUser = asyncHandler(async (req, res) => {
     //ALGORITHM FLOW
     //req body->data
     //username or email
@@ -120,24 +123,27 @@ const loginUser = asyncHandler(async (req, res,) => {
     //check password
     //access and refresh token
     //send cookies 
-
-
     //req body->data
+
+    console.log("loginUser - req.body:", req.body);  // Add this line to log the request body
+
     //this is for login in frontend 
     const { email, username, password } = req.body
 
-
-
-    //username or email
-    if (!(email || username)) {
+    //username or email validation
+    if (!email || !username) {
         throw new ApiError(400, "Email or username is required")
     }
 
 
     //find user
-    const user = await User.findOne({
-        $or: [{ username }, { email }]
-    }
+    const user = await User.findOne(
+        {
+            $or: [
+                { username },
+                { email }
+            ]
+        }
     )
 
     if (!user) {
