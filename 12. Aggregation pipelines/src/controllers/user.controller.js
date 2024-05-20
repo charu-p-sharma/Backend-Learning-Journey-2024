@@ -6,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 // import { upload } from "../middlewares/multer.middleware.js"
 import jwt from "jsonwebtoken";
 import { response } from "express";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -250,7 +251,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         return res
             .status(200)
             .cookie("accessToekn", accessToken, options)
-            .cookie("refreshToken", refreshToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
             .json(
                 new ApiResponse(
                     200, { accessToken, refreshToken: newRefreshToken },
@@ -465,7 +466,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                     {
                         $addFields: {
                             owner: {
-                                $first: "owner"
+                                $first: "$owner"
                             }
                         }
 
